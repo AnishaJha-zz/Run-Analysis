@@ -1,49 +1,25 @@
-Run Analysis Code Book
------------
-This Code Book explains about the vairables and data I've used to combine data sets.
+---
+title: "CodeBook"
+author: "Anisha"
+date: "21 October 2014"
+output: html_document
+---
 
-``` startdir ``` is the working directory where my code files are placed.
+This Code Book explains about the variables and data I've used to combine data sets.
 
-``` datadir ``` is the directory where data given is placed.
-
-``` testdirlist ``` is the directory where test data is placed.
-
-``` combinedirlist ``` is the combination of test and train data.
-
-``` testlist ``` is the list of files in test data
-
-``` trainlist ``` is the list of files in train data
-
-``` acombine ``` is the lisy of files in test and train data
-
-``` df1 ``` Data frame containing the combination of tables read from test and train data.
-
-``` df2 ``` Data frame containing the tables read from test data
-
-``` df3 ``` Data frame containing the tables read from tain data
-
-``` dfcol_subject ``` Data frame containing combined subject data from test and train data.
-
-``` dfcol_activity ``` Data frame containing combined activity data from test and train data.
-
-``` df_activitylabels ``` Data frame containing activity labels.
-
-``` dfcol_activitylabels ``` Data frame containing columns for descriptive activities.
-
-``` df_features ``` Data frame containing variable names.
-
-``` df_rawdata ``` Reading combined dataset. Variable names declared in df_features
-
-``` xx ``` Indexes of the mean variable names.
-
-``` xy ``` Indexes of the standard deviation variable names.
-
-``` xselected ``` Column name list for data to be selected for mean and standard deviation.
-
-``` dfselected ``` Data frame containing the selected data for mean and standard deviation.
-
-``` dffinal ``` Data table with descriptive activity labels. 
-
-``` tbl_final``` Final table created with correct labels.
-
-``` tbl_final2``` Final table with the average of each variable for each activity and each subject.
+``` features_cleaned ``` is the data frame where the features are read after cleaning up features.txt
+``` f_names ``` is the vector containing the names of features extracted from data frame feature
+``` varnames ``` vector of variables of combined data.
+``` X_train ``` Loaded X_train.txt file.
+``` X_test ``` Loaded X_test.txt file.
+``` X_train_test ``` Combined X train test with rbind.
+``` subject_train ``` Loaded subject train file.
+``` subject_test ``` Loaded subject test file.
+``` subject_train_test ``` Combined subject train test with rbind.
+``` y_train ``` Loaded Y_train.txt file.
+``` y_test ``` Loaded Y_test.txt file.
+``` y_train_test ``` Combined Y train test with rbind.
+``` combined_df ``` Binding the datasets got columnwise
+``` selected_df ``` Extracting the variables needed from the combined data frame.
+``` fdf.melt ``` Melted data frames using subject and actlabel ids.
+``` fdf.cast ``` Final tidy data set.
