@@ -1,79 +1,60 @@
-#download data
-startdir <- "/Users/anishajha/Documents/Big Data/DataScience/Coursera/Data Science All 9 courses/3--Getting and Cleaning Data/"
-setwd(startdir)
+#Setting up working directory
+setwd("/Users/anishajha/RLearn/run_analytics")
 
-fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-
-if(!file.exists("./data.zip")){
-    download.file(fileUrl,destfile = "./data.zip",method = "curl")
+#Creating 'data' directory
+if(!file.exists("data")) {
+    dir.create("data")
+    unzip(zipfile = "./data.zip", exdir = "./data/")
 }
+setwd("/Users/anishajha/RLearn/run_analytics/data/UCI HAR Dataset/")
+features_cleaned <- read.table("features_cleaned_clean.txt",stringsAsFactors=FALSE)
+f_names <- features_cleaned[,2]
+varnames <- append(features_cleaned[,2],c("Subject","Activity"))
 
-datadir <- "projectdata"
-unzip("data.zip",exdir = paste0("./",datadir,"/"))
+X_train <- read.table("train/X_train.txt",stringsAsFactors=FALSE)
+X_test <- read.table("test/X_test.txt",stringsAsFactors=FALSE)
+X_train_test <- rbind(X_train,X_test)
 
-setwd(paste0("./",datadir))
+subject_train <- read.table("train/subject_train.txt", stringsAsFactors=FALSE)
+subject_test <- read.table("test/subject_test.txt", stringsAsFactors=FALSE)
+subject_train_test <- rbind(subject_train,subject_test)
 
-extracteddir <- (list.dirs(recursive = FALSE))[1]
-setwd(paste0("./",extracteddir))
+y_train <- read.table("train/y_train.txt", stringsAsFactors=FALSE)
+y_test <- read.table("test/y_test.txt", stringsAsFactors=FALSE)
+y_train_test <- rbind(y_train,y_test)
 
-#Create a combined directory
+combined_df <- cbind(X_train_test,subject_train_test, y_train_test)
+names(combined_df) <- varnames
 
-testdirlist <- list.dirs("./test",full.names = TRUE, recursive = TRUE)
-combinedirlist <- gsub("test","combine",testdirlist)
-combinedirlist
-for(i in seq_along(testdirlist)){
-    if(!file.exists(combinedirlist[i])){dir.create(combinedirlist[i])}
-}
-testlist <- list.files("./test",pattern = ".txt",full.names = TRUE, recursive = TRUE)
-testlist <- sort(testlist,decreasing = TRUE)
-atest<-data.frame(testlist,tofile = gsub("test","combine",testlist),stringsAsFactors = FALSE)
+selected_df <- combined_df[,c(1,2,3,4,5,6,41,42,43,44,45,46,559,560,561,562,563)]
 
-trainlist <- list.files("./train",pattern = ".txt",full.names = TRUE, recursive = TRUE)
-atrain<-data.frame(trainlist,tofile = gsub("train","combine",trainlist),stringsAsFactors = FALSE)
-acombine <- merge(atest,atrain)
+selected_df$actlabel <- "Unset"
+selected_df$actlabel[selected_df$Activity==1] <- "Walking"
+selected_df$actlabel[selected_df$Activity==2] <- "wALKING_UPSTAIRS"
+selected_df$actlabel[selected_df$Activity==3] <- "wALKING_DOWNSTAIRS"
+selected_df$actlabel[selected_df$Activity==4] <- "SITTING"
+selected_df$actlabel[selected_df$Activity==5] <- "STANDING"
+selected_df$actlabel[selected_df$Activity==6] <- "LAYING"
 
+names(selected_df) <- gsub("Acc","Acceleration",names(selected_df))
+names(selected_df) <- gsub("std","StandardDeviation",names(selected_df))
+names(selected_df) <- tolower(names(selected_df))
 
-for(i in seq_along(acombine[,1]))
-{
-    if(!file.exists(acombine[i,1])){file.create(acombine[i,1])}
-    df2 <- read.table(acombine[i,2])
-    df3 <- read.table(acombine[i,3])
-    df1 <- rbind(df2,df3)
-    write.table(df1,acombine[i,1],col.names = FALSE, row.names = FALSE)
-}
-getwd()
+names(selected_df) <- gsub("tbody","tbody.", names(selected_df))
+names(selected_df) <- gsub("x",".x", names(selected_df))
+names(selected_df) <- gsub("y",".y", names(selected_df))
+names(selected_df) <- gsub("z",".z", names(selected_df))
+names(selected_df) <- gsub("acceleration","acceleration.", names(selected_df))
 
+names(selected_df) <- gsub("activit.y","activity", names(selected_df))
+names(selected_df) <- gsub("tbod.y","tbody", names(selected_df))
+names(selected_df) <- gsub("tgravit.y","tgravity", names(selected_df))
+names(selected_df) <- gsub("angle.xgravit.ymean","angle.x.gravity.mean", names(selected_df))
+names(selected_df) <- gsub("angle.ygravit.ymean","angle.y.gravity.mean", names(selected_df))
+names(selected_df) <- gsub("angle.zgravit.ymean","angle.z.gravity.mean", names(selected_df))
+names(selected_df) <- gsub("tgravityacceleration","tgravity.acceleration", names(selected_df))
 
+fdf.melt <- melt(selected_df, id=c("subject","actlabel"))
 
-dfcol_subject <- read.table("./combine/subject_combine.txt", stringsAsFactors = FALSE, col.names = "subject")
-dfcol_activity <- read.table("./combine/y_combine.txt", stringsAsFactors = FALSE,col.names = "activity")
-
-df_activitylabels <- read.table("./activity_labels.txt", stringsAsFactors = FALSE, col.names = c("activity","activitylabel"))
-
-# CREATE COLUMNS FOR DESCRIPTIVE ACTIVITIES
-dfcol_activitylabels <- merge(dfcol_activity, df_activitylabels)
-# head(dfcol_activitylabels)
-
-# CREATE DATATABLE TO GET VARIABLE NAMES
-df_features <- read.table("./features.txt", col.names = c("varnum","varname"), stringsAsFactors = FALSE)
-
-# ADD DESCRIPTIVE VARIABLE NAMES TO RAW DATA
-df_rawdata <- read.table("./combine/X_combine.txt", stringsAsFactors = FALSE , col.names = df_features$varname)
-
-
-# SELECT ONLY MEAN AND STANDARD DEVIATION VARIABLES
-# ASSUMPTION : THOSE WHOSE NAMES CONTAIN "mean" or "std" are considered to satisfy the condition
-xx <- grep("mean",tolower(df_features$varname))
-xy <- grep("std",tolower(df_features$varname))
-xselected <- df_features$varname[unique(c(xx,xy))]
-
-df_selected <- df_rawdata[,df_features$varname %in% xselected]
-
-
-# CREATE A DATA TABLE WITH DESCRIPTIVE ACTIVITY LABELS
-df_final <- cbind(dfcol_subject, dfcol_activitylabels,df_selected)
-
-library(dplyr)
-tbl_final <- tbl_df(df_final)
-tbl_final2 <- group_by(tbl_final,subject,activitylabel)
-#tbl_tidy <- summarise(tbl_final2,mean(varnum))
+fdf.cast <- dcast(fdf.melt, subject+actlabel ~ variable,mean)
+write.csv(file="getdata_proj_tidy_final1.csv",x=fdf.cast)
